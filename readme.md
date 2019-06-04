@@ -61,7 +61,7 @@ SpellChecker.getDictionary("fr-FR", function(err, result) {
 
 #### getDictionarySync(fileName [, folderPath])
 
-This method allows to get a `Dictionary` instance from a file, in a synchronous way. Unlike `getDictionary`, this method can't open ZIP files.
+This method allows to get a `Dictionary` instance from a file, in a synchronous way.
 
 Parameters:
  * `fileName`: The name of the dictionary's file. The file must have `.dic` extension.

@@ -7,20 +7,31 @@
 // Load dependencies.
 const expect  = require("chai").expect;
 const SpellChecker = require('./index.js');
+const fs = require('fs');
 
 describe("Module methods", function() {
-    it("getDictionary() and getDictionarySync()", function(done) {
+    beforeEach(function () {
+        // Delete the extracted dictionary file. This will force us to extract again.
+        var dicPath = __dirname + "/dict/en-US.dic";
+        if (fs.existsSync(dicPath)) {
+            fs.unlinkSync(dicPath);
+        }
+    });
+
+    it("getDictionary()", function(done) {
         // Get async dictionary.
         SpellChecker.getDictionary("en-US", function(err, asyncDict) {
             // Dictionary should be loaded.
             expect(asyncDict).to.not.be.null;
-            
-            // Get sync dictionary.
-            var syncDict = SpellChecker.getDictionarySync("en-US");
-            expect(syncDict).to.not.be.null;
-            
             done();
         });
+    });
+
+    it("getDictionarySync()", function() {
+        // Get sync dictionary.
+        var syncDict = SpellChecker.getDictionarySync("en-US");
+        // Dictionary should be loaded.
+        expect(syncDict).to.not.be.null;
     });
 });
 
