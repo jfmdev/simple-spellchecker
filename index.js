@@ -6,7 +6,7 @@
 
 // Load dependencies.
 const fs = require('fs');
-const unzip = require('unzip-stream');
+const Zip = require('adm-zip');
 const stripBOM = require('strip-bom');
 const Dictionary = require('./dictionary.js');
 
@@ -39,10 +39,9 @@ var SpellChecker = {
                     fs.exists(zip_path, function(exists) {
                         if(exists) {
                             // The file ZIP exists, unzip it.
-                            fs.createReadStream(zip_path).pipe( unzip.Extract({ path: folder }) ).on('close', function() {
-                                // The file was extracted, now read it.
-                                SpellChecker._readFile(dic_path, callback);
-                            });
+                            var zip = new Zip(zip_path);
+                            zip.extractAllTo(folder);
+                            SpellChecker._readFile(dic_path, callback);
                         } else {
                             // The ZIP file also doesn't exists, return an error.
                             callback('The dictionary could not be read, no file with the name "' + fileName + '" could be found', null);
@@ -75,6 +74,25 @@ var SpellChecker = {
             }
         });
     },
+
+    /**
+     * Create a dictionary from a .dic file synchronously.
+     *
+     * @param {String} file_path The path of the file.
+     * @returns The created dictionary
+     * @throws An error if the file couldn't be opened
+     */  
+    _readFileSync: function(file_path) {
+        try {
+            var text = fs.readFileSync(file_path, 'utf8')
+            // Create dictionary and return it.
+            var dictionary = new Dictionary(text.split('\n'));
+            return dictionary;
+        } catch(err) {
+            // Return an error.
+            throw new Error("The dictionary file could not be read: " + file_path + ". Error: " + err);
+        }
+    },
   
     /**
      * Create a dictionary from a .dic file .
@@ -94,12 +112,21 @@ var SpellChecker = {
             // Verify if the dictionary file exists.
             if(fs.existsSync(dic_path)) {
                 // The file exists, read it.
-                var text = fs.readFileSync(dic_path, 'utf8');
-                var dictionary = new Dictionary(text.split('\n'));
+                var dictionary = SpellChecker._readFileSync(dic_path);
                 return dictionary;
             } else {
-                // The file do not exists, throw an error (only the asynchronous versions of this method unzip the compressed files).
-                throw new Error('The dictionary could not be created, no file with the name "' + fileName + '" could be found');
+                // The file do not exists, verify if the ZIP file exists.
+                var exists = fs.existsSync(zip_path);
+                if(exists) {
+                    // The file ZIP exists, unzip it.
+                    var zip = new Zip(zip_path);
+                    zip.extractAllTo(folder);
+                    var dictionary = SpellChecker._readFileSync(dic_path);
+                    return dictionary;
+                } else {
+                    // The ZIP file also doesn't exists, return an error.
+                    throw new Error('The dictionary could not be read, no file with the name "' + fileName + '" could be found');
+                } 
             }
         } catch(err) {
             // Throw an error.
