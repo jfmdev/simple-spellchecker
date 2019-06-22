@@ -38,10 +38,15 @@ var SpellChecker = {
                     // The file do not exists, verify if the ZIP file exists.
                     fs.exists(zip_path, function(exists) {
                         if(exists) {
-                            // The file ZIP exists, unzip it.
-                            var zip = new Zip(zip_path);
-                            zip.extractAllTo(folder);
-                            SpellChecker._readFile(dic_path, callback);
+                            try{
+                                // The file ZIP exists, unzip it.
+                                var zip = new Zip(zip_path);
+                                zip.extractAllTo(folder);
+                                SpellChecker._readFile(dic_path, callback);
+                            } catch(errZip) {
+                                // Return error.
+                                if(callback) callback('An unexpected error ocurred: ' + errZip, null);
+                            }
                         } else {
                             // The ZIP file also doesn't exists, return an error.
                             callback('The dictionary could not be read, no file with the name "' + fileName + '" could be found', null);
