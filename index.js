@@ -6,6 +6,8 @@
 
 // Load dependencies.
 const fs = require('fs');
+const path = require('path');
+const tmp = require('tmp');
 const Zip = require('adm-zip');
 const stripBOM = require('strip-bom');
 const Dictionary = require('./dictionary.js');
@@ -40,8 +42,7 @@ var SpellChecker = {
                         if(exists) {
                             try{
                                 // The file ZIP exists, unzip it.
-                                var zip = new Zip(zip_path);
-                                zip.extractAllTo(folder);
+                                SpellChecker._unzipSync(zip_path, folder);
                                 SpellChecker._readFile(dic_path, callback);
                             } catch(errZip) {
                                 // Return error.
@@ -98,6 +99,33 @@ var SpellChecker = {
             throw new Error("The dictionary file could not be read: " + file_path + ". Error: " + err);
         }
     },
+
+    /**
+     * Unzip a zip file.
+     *
+     * Each entry in the zip file will be extracted atomically. From the perspective of another
+     * process, the unzipped file will either not exist or will be fully unzipped.
+     *
+     * @param {String} zipPath The path of the zip file.
+     * @param {String} destinationDir The directory to unzip into.
+     * @throws An error if the file couldn't be unzipped.
+     */
+    _unzipSync: function(zipPath, destinationDir) {
+        // Unzip into a tmp directory.
+        var tmpDir = tmp.dirSync();
+        var zip = new Zip(zipPath);
+        zip.extractAllTo(tmpDir.name);
+
+        // Move the unzipped files out of the tmp directory and into the destination directory.
+        zip.getEntries().forEach(({ entryName }) => {
+            var from = path.join(tmpDir.name, entryName);
+            var to = path.join(destinationDir, entryName);
+            fs.renameSync(from, to);
+        });
+
+        // Clean up the tmp directory
+        tmpDir.removeCallback();
+    },
   
     /**
      * Create a dictionary from a .dic file .
@@ -124,8 +152,7 @@ var SpellChecker = {
                 var exists = fs.existsSync(zip_path);
                 if(exists) {
                     // The file ZIP exists, unzip it.
-                    var zip = new Zip(zip_path);
-                    zip.extractAllTo(folder);
+                    SpellChecker._unzipSync(zip_path, folder);
                     var dictionary = SpellChecker._readFileSync(dic_path);
                     return dictionary;
                 } else {
