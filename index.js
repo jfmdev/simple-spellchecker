@@ -112,7 +112,7 @@ var SpellChecker = {
      */
     _unzipSync: function(zipPath, destinationDir) {
         // Unzip into a tmp directory.
-        var tmpDir = tmp.dirSync();
+        var tmpDir = tmp.dirSync({ dir: destinationDir });
         var zip = new Zip(zipPath);
         zip.extractAllTo(tmpDir.name);
 
