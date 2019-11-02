@@ -1,6 +1,6 @@
 {
   "name": "simple-spellchecker",
-  "version": "0.9.9",
+  "version": "1.0.0",
   "description": "A simple spellchecker compatible with Electron",
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,7 @@
   "dependencies": {
     "adm-zip": "^0.4.13",
     "binarysearch": "^0.2.4",
-    "damerau-levenshtein": "git://github.com/cbaatz/damerau-levenshtein.git",
+    "damerau-levenshtein": "^1.0.5",
     "strip-bom": "^2.0.0",
     "tmp": "^0.1.0"
   },

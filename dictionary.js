@@ -6,7 +6,7 @@
 
 // Load dependencies.
 const BinarySearch = require('binarysearch');
-const EditDistance = require('damerau-levenshtein')();
+const Levenshtien  = require('damerau-levenshtein');
 
 // Use this object for consider accents and special characters when comparing UTF-8 strings.
 var Collator = new Intl.Collator(undefined, {'sensitivity': 'accent'});
@@ -106,7 +106,7 @@ Dictionary.prototype.getSuggestions = function(word, limit, maxDistance) {
             // The index 'k' is going to be 0, 1, -1, 2, -2... 
             k = closest + (i%2 != 0? ((i+1)/2) : (-i/2) );
             if(k >=0 && k < this.wordlist.length) {
-                dist = EditDistance(word, this.wordlist[k].toLowerCase()); 
+                dist = Levenshtien(word, this.wordlist[k].toLowerCase()).steps; 
                 if(dist <= maxDistance) res[dist].push(this.wordlist[k]);
             }
         }
